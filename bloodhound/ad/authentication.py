@@ -23,7 +23,7 @@
 ####################
 
 import logging
-from ldap3 import Server, Connection, NTLM, ALL
+from ldap3 import Server, Connection, NTLM, ALL, SASL, DIGEST_MD5
 from ldap3.core.results import RESULT_STRONGER_AUTH_REQUIRED
 
 """
@@ -31,7 +31,7 @@ Active Directory authentication helper
 """
 class ADAuthentication(object):
     def __init__(self, username='', password='', domain='',
-                 lm_hash='', nt_hash='', aes_key='', kdc=None):
+                 lm_hash='', nt_hash='', aes_key='', kdc=None, digest=False):
         self.username = username
         self.domain = domain
         if '@' in self.username:
@@ -40,6 +40,7 @@ class ADAuthentication(object):
         self.lm_hash = lm_hash
         self.nt_hash = nt_hash
         self.aes_key = aes_key
+        self.digest = digest
         self.kdc = kdc
 
 
@@ -60,7 +61,12 @@ class ADAuthentication(object):
         else:
             ldappass = self.password
         ldaplogin = '%s\\%s' % (self.domain, self.username)
-        conn = Connection(server, user=ldaplogin, auto_referrals=False, password=ldappass, authentication=NTLM, receive_timeout=60, auto_range=True)
+        if self.digest is False:
+            conn = Connection(server, user=ldaplogin, auto_referrals=False, password=ldappass, authentication=NTLM, receive_timeout=60, auto_range=True)
+        else:
+            conn = Connection(server, auto_bind = True, version = 3, authentication=SASL, sasl_mechanism = DIGEST_MD5, receive_timeout=60, sasl_credentials = (None, username, password, None, 'sign'))
+            #Connection(server, auto_bind = True, version = 3, client_strategy = test_strategy, authentication = SASL,
+                         #sasl_mechanism = DIGEST_MD5, sasl_credentials = (None, 'username', 'password', None, 'sign'))
 
         # TODO: Kerberos auth for ldap
         if self.kdc is not None:
