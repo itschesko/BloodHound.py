@@ -188,11 +188,11 @@ def main():
                         help='Password')
     parser.add_argument('-k',
                         '--kerberos',
-                        action='store_false',
+                        action='store_true',
                         help='Use kerberos')
     parser.add_argument('-dg',
                         '--digest',
-                        action='store_false',
+                        action='store_true',
                         help='Use Digest-MD5')
     parser.add_argument('--hashes',
                         action='store',
