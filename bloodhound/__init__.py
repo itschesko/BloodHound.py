@@ -188,8 +188,12 @@ def main():
                         help='Password')
     parser.add_argument('-k',
                         '--kerberos',
-                        action='store_true',
+                        action='store_false',
                         help='Use kerberos')
+    parser.add_argument('-dg',
+                        '--digest',
+                        action='store_false',
+                        help='Use Digest-MD5')
     parser.add_argument('--hashes',
                         action='store',
                         help='LM:NLTM hashes')
@@ -247,6 +251,9 @@ def main():
         logging.debug('Authentication: kerberos')
         kerberize()
         auth = ADAuthentication()
+    elif args.digest is True:
+        logging.debug('Authentication: digest')
+        auth = ADAuthentication(username=args.username, password=args.password, domain=args.domain, digest=True)
     elif args.username is not None and args.password is not None:
         logging.debug('Authentication: username/password')
         auth = ADAuthentication(username=args.username, password=args.password, domain=args.domain)
